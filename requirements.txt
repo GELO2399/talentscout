@@ -6,3 +6,4 @@ pyresparser
 celery
 redis
 scikit-learn
+jwt
