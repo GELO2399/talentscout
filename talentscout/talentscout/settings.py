@@ -118,11 +118,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Celery config
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
-# Channels config (Redis Layer)
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {'hosts': [('localhost', 6379)],},
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
     },
 }
 

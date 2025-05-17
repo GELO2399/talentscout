@@ -29,7 +29,7 @@ urlpatterns = [
     path('', include('jobs.urls')),
     path('users/', include('users.urls')),
     path('employers/', include('employers.urls')),
-    path('chat/', include('messaging.urls')),
+    path('messaging/', include('messaging.urls')),
 ]
 
 if settings.DEBUG:

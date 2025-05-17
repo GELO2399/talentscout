@@ -1,33 +1,56 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from .models import Message
-from .forms import MessageForm
-from django.contrib.auth import get_user_model
+# messaging/views.py
 
-User = get_user_model()
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Conversation, Message
+from users.models import UserProfile
+from django.contrib.auth.models import User
+from django.utils import timezone
+
 
 @login_required
-def message_list(request, receiver_id):
-    receiver = get_object_or_404(User, id=receiver_id)
+def start_conversation(request, user_id):
+    """Start or fetch an existing conversation with the user."""
+    user = get_object_or_404(User, id=user_id)
 
-    messages = Message.objects.filter(
-        Q(sender=request.user, receiver=receiver) | Q(sender=receiver, receiver=request.user)
-    ).order_by('timestamp')
+    # Check if a conversation already exists
+    conversation, created = Conversation.objects.get_or_create()
+    if not created:
+        conversation.participants.add(request.user, user)
+    
+    return redirect('messaging:conversation_detail', conversation_id=conversation.id)
+
+
+@login_required
+def conversation_detail(request, conversation_id):
+    """Display the conversation details and handle message sending."""
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=request.user)
+    messages = conversation.messages.order_by('timestamp')
 
     if request.method == 'POST':
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.sender = request.user
-            message.receiver = receiver
-            message.save()
-            return redirect('messaging:message_list', receiver_id=receiver_id)
-    else:
-        form = MessageForm()
+        content = request.POST.get('content')
+        if content:
+            Message.objects.create(
+                conversation=conversation,
+                sender=request.user,
+                content=content,
+                timestamp=timezone.now()
+            )
+            return redirect('messaging:conversation_detail', conversation_id=conversation.id)
 
-    return render(request, 'messaging/message_list.html', {
+    return render(request, 'messaging/conversation_detail.html', {
+        'conversation': conversation,
         'messages': messages,
-        'receiver': receiver,
-        'form': form,
     })
+
+
+def chat_view(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    messages = conversation.messages.order_by('timestamp')
+    return render(request, 'messaging/chat.html', {
+        'conversation': conversation,
+        'messages': messages
+    })
+
+def chat_dashboard(request):
+    return render(request, 'messaging/chat_dashboard.html')
