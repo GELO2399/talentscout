@@ -1,4 +1,4 @@
-#!C:\Users\maku\Documents\talentscout\venv\Scripts\python.exe
+#!C:\Users\maku\talentscout\venv\Scripts\python.exe
 """Extract pdf structure in XML format"""
 
 import logging
