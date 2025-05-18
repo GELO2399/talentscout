@@ -71,6 +71,9 @@ TEMPLATES = [
     },
 ]
 
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
 WSGI_APPLICATION = 'talentscout.wsgi.application'
 ASGI_APPLICATION = 'talentscout.asgi.application'
 
