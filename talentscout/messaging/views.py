@@ -30,18 +30,9 @@ def message_list(request, receiver_id):
         'messages': messages,
         'receiver': receiver,
         'form': form,
+    
+    
+    
+    
+    
     })
-<<<<<<< HEAD
-
-
-def chat_view(request, conversation_id):
-    conversation = get_object_or_404(Conversation, id=conversation_id)
-    return render(request, 'messaging/chat.html', {
-        'conversation': conversation,
-        'user': request.user
-    })
-
-def chat_dashboard(request):
-    return render(request, 'messaging/chat_dashboard.html')
-=======
->>>>>>> parent of 4094cd6f (Addition of Messaging and Chat, Development is on progress)

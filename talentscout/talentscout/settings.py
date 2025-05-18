@@ -131,17 +131,12 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
 # Channels config (Redis Layer)
 CHANNEL_LAYERS = {
-<<<<<<< HEAD
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [os.environ.get("REDIS_URL", "redis://127.0.0.1:6379")],
-        },
-=======
+    
     'default': {
+
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {'hosts': [('localhost', 6379)],},
->>>>>>> parent of 4094cd6f (Addition of Messaging and Chat, Development is on progress)
+
     },
 }
 

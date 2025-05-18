@@ -5,16 +5,7 @@ from .forms import JobForm
 from users.models import UserProfile
 from django.core.paginator import Paginator
 from django.contrib import messages
-<<<<<<< HEAD
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
-import logging
-logger = logging.getLogger(__name__)
-
-channel_layer = get_channel_layer()
-=======
->>>>>>> parent of 4094cd6f (Addition of Messaging and Chat, Development is on progress)
-
+@login_required
 def job_list(request):
     jobs = Job.objects.all().order_by('-posted_at')
 
