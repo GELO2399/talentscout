@@ -5,12 +5,15 @@ from .forms import JobForm
 from users.models import UserProfile
 from django.core.paginator import Paginator
 from django.contrib import messages
+<<<<<<< HEAD
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import logging
 logger = logging.getLogger(__name__)
 
 channel_layer = get_channel_layer()
+=======
+>>>>>>> parent of 4094cd6f (Addition of Messaging and Chat, Development is on progress)
 
 def job_list(request):
     jobs = Job.objects.all().order_by('-posted_at')
@@ -83,50 +86,28 @@ def apply_job(request, job_id):
 
     return redirect('jobs:job_detail', job_id=job_id)
 
+
 @login_required
 def employer_job_detail(request, job_id):
     job = get_object_or_404(Job, id=job_id, employer=request.user)
-    applicants = JobApplication.objects.filter(job=job)
+    applications = job.jobapplication_set.all()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        applicant_id = request.POST.get('applicant_id')
+        if action == 'accept' and applicant_id:
+            try:
+                application = applications.get(applicant__id=applicant_id)
+                application.status = 'accepted'
+                application.save()
+                messages.success(request, f"{application.applicant.username} has been accepted!")
+            except JobApplication.DoesNotExist:
+                messages.error(request, "Application not found.")
+
+        return redirect('jobs:employer_job_detail', job_id=job_id)
 
     context = {
         'job': job,
-        'applicants': applicants
+        'applications': applications,
     }
     return render(request, 'jobs/employer_job_detail.html', context)
-
-@login_required
-def accept_application(request, application_id):
-    application = get_object_or_404(JobApplication, id=application_id)
-    application.status = 'Accepted'
-    application.save()
-
-    # WebSocket notification
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        f"applicant_{application.applicant.id}", {
-            'type': 'application_update',
-            'message': 'Your application status was updated.',
-            'status': 'Accepted',
-            'job_id': application.job.id
-        }
-    )
-    return redirect('jobs:employer_job_detail', job_id=application.job.id)
-
-@login_required
-def reject_applicant(request, application_id):
-    application = get_object_or_404(JobApplication, id=application_id)
-    application.status = 'rejected'
-    application.save()
-
-    # Send real-time update
-    async_to_sync(channel_layer.group_send)(
-        f'job_{application.job.id}',
-        {
-            'type': 'status_update',
-            'status': 'rejected',
-            'applicant': application.applicant.username
-        }
-    )
-
-    messages.error(request, f"{application.applicant.username} has been rejected.")
-    return redirect('jobs:employer_job_detail', job_id=application.job.id)

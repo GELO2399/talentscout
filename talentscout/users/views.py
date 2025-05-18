@@ -11,12 +11,6 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 
 import os
-import nltk
-try:
-    nltk.data.find('corpora/stopwords.zip')
-except LookupError:
-    nltk.download('stopwords')
-
 
 # 🟢 User Profile View
 @login_required

@@ -19,7 +19,7 @@
 <ul>
   {% for job in jobs %}
     <li>
-      <a href="{% url 'users:employer_job_detail' job.id %}">{{ job.title }}</a> - {{ job.location }} - {{ job.get_job_type_display }}
+      <a href="{% url 'jobs:job_detail' job.id %}">{{ job.title }}</a> - {{ job.location }} - {{ job.get_job_type_display }}
       <strong>({{ job.applications_count }} applicants)</strong>
     </li>
   {% empty %}
