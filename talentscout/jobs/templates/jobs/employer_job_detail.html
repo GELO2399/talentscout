@@ -6,7 +6,7 @@
   <p><strong>Salary Range:</strong> {{ job.salary_range }}</p>
   <p><strong>Description:</strong> {{ job.description }}</p>
   <p><strong>Requirements:</strong> {{ job.requirements }}</p>
-
+  
   <h3>Applicants ({{ applicants.count }})</h3>
 
   {% if applicants %}
@@ -40,7 +40,8 @@
   <!-- JavaScript Logic -->
   <script>
     const jobId = "{{ job.id }}";
-    const socket = new WebSocket('ws://' + window.location.host + '/ws/jobs/' + jobId + '/');
+    const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const socket = new WebSocket(protocol + window.location.host + '/ws/jobs/' + jobId + '/');
 
     // Accept Application
     function acceptApplication(applicationId) {

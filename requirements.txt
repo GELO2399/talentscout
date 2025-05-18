@@ -6,3 +6,6 @@ pyresparser
 celery
 redis
 scikit-learn
+jwt
+gunicorn
+daphne

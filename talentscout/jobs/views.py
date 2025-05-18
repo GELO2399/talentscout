@@ -7,6 +7,8 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+import logging
+logger = logging.getLogger(__name__)
 
 channel_layer = get_channel_layer()
 
@@ -50,21 +52,36 @@ def post_job(request):
 
 
 def job_detail(request, job_id):
-    job = Job.objects.get(id=job_id)
-    return render(request, 'jobs/job_detail.html', {'job': job})
-
+    job = get_object_or_404(Job, id=job_id)
+    applicants = JobApplication.objects.filter(job=job)
+    logger.info(f"Applicants found: {applicants}")
+    print(f"Applicants found: {applicants}")
+    return render(request, 'jobs/employer_job_detail.html', {
+        'job': job,
+        'applicants': applicants
+    })
 
 @login_required
 def apply_job(request, job_id):
-    job = get_object_or_404(Job, id=job_id)
+    if request.method == "POST":
+        # Get the job object
+        job = get_object_or_404(Job, id=job_id)
+        
+        try:
+            # ✅ Get the UserProfile instance associated with the current user
+            user_profile = UserProfile.objects.get(user=request.user)
 
-    if job.jobapplication_set.filter(applicant=request.user).exists():
-        messages.info(request, "You have already applied for this job.")
-        return redirect('jobs:job_detail', job_id=job.id)
+            # ✅ Create the JobApplication
+            JobApplication.objects.create(
+                applicant=user_profile,
+                job=job
+            )
+            messages.success(request, "You have successfully applied for the job!")
+        except UserProfile.DoesNotExist:
+            messages.error(request, "You do not have a profile yet. Please complete your profile first.")
+            return redirect('users:profile')
 
-    job_application = job.jobapplication_set.create(applicant=request.user)
-    messages.success(request, "Application submitted successfully!")
-    return redirect('jobs:job_detail', job_id=job.id)
+    return redirect('jobs:job_detail', job_id=job_id)
 
 @login_required
 def employer_job_detail(request, job_id):

@@ -46,10 +46,9 @@ def conversation_detail(request, conversation_id):
 
 def chat_view(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id)
-    messages = conversation.messages.order_by('timestamp')
     return render(request, 'messaging/chat.html', {
         'conversation': conversation,
-        'messages': messages
+        'user': request.user
     })
 
 def chat_dashboard(request):

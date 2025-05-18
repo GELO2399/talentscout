@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: talentscout-web
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --no-input
+      python manage.py migrate
+    startCommand: daphne -b 0.0.0.0 -p $PORT talentscout.asgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: talentscout.settings
+      - key: PORT
+        value: 8000
+      - key: REDIS_URL
+        fromService:
+          name: talentscout-redis
+          property: connectionString
+    regions: 
+      - oregon  # Choose your nearest region
+
+  - type: redis
+    name: talentscout-redis
+    plan: free

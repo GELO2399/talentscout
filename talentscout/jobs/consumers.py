@@ -76,37 +76,36 @@ class JobConsumer(AsyncWebsocketConsumer):
         self.job_id = self.scope['url_route']['kwargs']['job_id']
         self.room_group_name = f'job_{self.job_id}'
 
-        # Join the room
+        # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
-
         await self.accept()
+        print(f"Connected to job {self.job_id}")
 
     async def disconnect(self, close_code):
-        # Leave the room
+        # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
+        print(f"Disconnected from job {self.job_id}")
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        action = data.get('action')
         application_id = data.get('id')
         status = data.get('status')
-
-        # Broadcast to room group
+        
+        # Send update to the room
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'status_update',
                 'id': application_id,
-                'status': status
+                'status': status,
             }
         )
 
     async def status_update(self, event):
-        # Send message to WebSocket
         await self.send(text_data=json.dumps(event))
