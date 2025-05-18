@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Chat with {{ receiver.username }}</h2>
+
+<div class="chat-box" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+  {% for msg in messages %}
+    <div style="margin-bottom: 10px; text-align: {% if msg.sender == request.user %}right{% else %}left{% endif %};">
+      <div style="display: inline-block; background-color: {% if msg.sender == request.user %}#dcf8c6{% else %}#fff{% endif %}; padding: 8px 12px; border-radius: 10px;">
+        {{ msg.content|linebreaksbr }}
+      </div>
+      <br>
+      <small style="color: gray;">{{ msg.timestamp|date:"M d, Y H:i" }}</small>
+    </div>
+  {% empty %}
+    <p>No messages yet. Say hi!</p>
+  {% endfor %}
+</div>
+
+<form method="post" style="margin-top: 15px;">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Send</button>
+</form>
+{% endblock %}

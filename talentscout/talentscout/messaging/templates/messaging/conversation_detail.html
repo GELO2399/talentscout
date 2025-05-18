@@ -1,0 +1,20 @@
+<!-- messaging/conversation_detail.html -->
+{% extends 'base.html' %}
+{% block content %}
+<h2>Conversation</h2>
+
+<div class="messages">
+    {% for message in messages %}
+        <div class="{% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+            <p><strong>{{ message.sender.username }}</strong>: {{ message.content }}</p>
+            <small>{{ message.timestamp }}</small>
+        </div>
+    {% endfor %}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <textarea name="content" placeholder="Type your message here..." required></textarea>
+    <button type="submit">Send</button>
+</form>
+{% endblock %}

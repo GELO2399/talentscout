@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
 <h2>Job Listings</h2>
-<form method="get">
+
+<form method="get" class="job-filter-form">
   <input type="text" name="q" placeholder="Search jobs..." value="{{ request.GET.q }}">
   <input type="text" name="location" placeholder="Location" value="{{ request.GET.location }}">
   <select name="job_type">
@@ -14,15 +15,18 @@
   <button type="submit">Filter</button>
 </form>
 
-<ul>
+<div class="job-cards-container">
   {% for job in jobs %}
-    <li><a href="{% url 'jobs:employer_job_detail' job.id %}">{{ job.title }}</a> - {{ job.location }} - {{ job.get_job_type_display }}
+    <div class="job-card">
+      <h3><a href="{% url 'jobs:employer_job_detail' job.id %}">{{ job.title }}</a></h3>
+      <p>{{ job.location }} · {{ job.get_job_type_display }}</p>
+    </div>
   {% empty %}
-    <li>No jobs found.</li>
+    <p>No jobs found.</p>
   {% endfor %}
-</ul>
+</div>
 
-<div>
+<div class="pagination">
   {% if jobs.has_previous %}
     <a href="?page={{ jobs.previous_page_number }}">Previous</a>
   {% endif %}
@@ -32,3 +36,12 @@
   {% endif %}
 </div>
 {% endblock %}
+
+<style>
+.job-card {
+  border: 2px solid red;
+  padding: 20px;
+  margin-bottom: 10px;
+  background-color: yellow;
+}
+</style>

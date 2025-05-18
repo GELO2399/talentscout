@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Applicants</h2>
+  <form method="get">
+    <input type="text" name="skill" placeholder="Filter by Skill" value="{{ request.GET.skill }}">
+    <select name="status">
+      <option value="">All Statuses</option>
+      <option value="Pending" {% if request.GET.status == 'Pending' %}selected{% endif %}>Pending</option>
+      <option value="Shortlisted" {% if request.GET.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+      <option value="Rejected" {% if request.GET.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+    <button type="submit">Filter</button>
+  </form>
+  <ul>
+    {% for applicant in applicants %}
+      <li>{{ applicant.user.username }} applied to {{ applicant.job.title }} - Status: {{ applicant.application_status }}</li>
+    {% empty %}
+      <li>No applicants found.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+  
