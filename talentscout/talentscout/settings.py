@@ -139,8 +139,14 @@ LOGIN_URL = '/users/employer-login/'
 LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
-# Email backend (use console for dev, configure SMTP for prod)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'iwasplayer1@gmail.com'
+EMAIL_HOST_PASSWORD = 'ljmgrupnptxtddel'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Celery config
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
