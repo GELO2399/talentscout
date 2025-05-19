@@ -2,8 +2,6 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import Applicant
 from django.db.models import Q
-
-# employers/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages

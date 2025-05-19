@@ -9,3 +9,5 @@ scikit-learn
 jwt
 gunicorn
 daphne
+django-cors-headers
+django-heroku

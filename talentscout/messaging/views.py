@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Message
+from .models import Message, Conversation
 from .forms import MessageForm
 from django.contrib.auth import get_user_model
 
@@ -36,3 +36,13 @@ def message_list(request, receiver_id):
     
     
     })
+def chat(request):
+    return render(request, 'messaging/chat.html')
+
+def start_conversation(request, user_id):
+    recipient = get_object_or_404(User, id=user_id)
+    # Logic to start a conversation
+    conversation, created = Conversation.objects.get_or_create(
+        user1=request.user, user2=recipient
+    )
+    return redirect('messaging:chat', conversation_id=conversation.id)

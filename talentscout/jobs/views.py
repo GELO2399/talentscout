@@ -5,9 +5,13 @@ from .forms import JobForm
 from users.models import UserProfile
 from django.core.paginator import Paginator
 from django.contrib import messages
+import logging
+
+logger = logging.getLogger(__name__)
 @login_required
 def job_list(request):
-    jobs = Job.objects.all().order_by('-posted_at')
+    jobs = Job.objects.all().order_by('-created_at')
+
 
     # Filters
     query = request.GET.get('q')
@@ -45,60 +49,41 @@ def post_job(request):
     return render(request, 'jobs/post_job.html', {'form': form})
 
 
+
+
+@login_required
 def job_detail(request, job_id):
     job = get_object_or_404(Job, id=job_id)
-    applicants = JobApplication.objects.filter(job=job)
-    logger.info(f"Applicants found: {applicants}")
-    print(f"Applicants found: {applicants}")
-    return render(request, 'jobs/employer_job_detail.html', {
+    profile = getattr(request.user, 'userprofile', None)  # your custom profile model
+    
+    # Fetch job applications if the user is an employer and owns the job
+    applications = None
+    if profile and profile.is_employer and job.employer == request.user:
+        applications = JobApplication.objects.filter(job=job)
+    
+    return render(request, 'jobs/job_detail.html', {
         'job': job,
-        'applicants': applicants
+        'profile': profile,
+        'applications': applications,  # will be None for job seekers
     })
+
 
 @login_required
 def apply_job(request, job_id):
-    if request.method == "POST":
-        # Get the job object
-        job = get_object_or_404(Job, id=job_id)
-        
-        try:
-            # ✅ Get the UserProfile instance associated with the current user
-            user_profile = UserProfile.objects.get(user=request.user)
+    job = get_object_or_404(Job, id=job_id)
+    profile = getattr(request.user, 'userprofile', None)
 
-            # ✅ Create the JobApplication
-            JobApplication.objects.create(
-                applicant=user_profile,
-                job=job
-            )
-            messages.success(request, "You have successfully applied for the job!")
-        except UserProfile.DoesNotExist:
-            messages.error(request, "You do not have a profile yet. Please complete your profile first.")
-            return redirect('users:profile')
+    if not profile or profile.is_employer:
+        messages.error(request, "Only job seekers can apply to jobs.")
+        return redirect('jobs:job_detail', job_id=job_id)
+
+    # Create job application if not already applied
+    existing_application = JobApplication.objects.filter(job=job, applicant=profile).first()
+    if existing_application:
+        messages.info(request, "You have already applied to this job.")
+    else:
+        JobApplication.objects.create(job=job, applicant=profile)
+        messages.success(request, "Your application has been submitted.")
 
     return redirect('jobs:job_detail', job_id=job_id)
 
-
-@login_required
-def employer_job_detail(request, job_id):
-    job = get_object_or_404(Job, id=job_id, employer=request.user)
-    applications = job.jobapplication_set.all()
-
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        applicant_id = request.POST.get('applicant_id')
-        if action == 'accept' and applicant_id:
-            try:
-                application = applications.get(applicant__id=applicant_id)
-                application.status = 'accepted'
-                application.save()
-                messages.success(request, f"{application.applicant.username} has been accepted!")
-            except JobApplication.DoesNotExist:
-                messages.error(request, "Application not found.")
-
-        return redirect('jobs:employer_job_detail', job_id=job_id)
-
-    context = {
-        'job': job,
-        'applications': applications,
-    }
-    return render(request, 'jobs/employer_job_detail.html', context)

@@ -52,6 +52,22 @@ MIDDLEWARE = [
 
 
 ]
+# settings.py
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'jobs.views': {  # Replace with your app's name
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
 
 ROOT_URLCONF = 'talentscout.urls'
 
@@ -114,8 +130,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Authentication Backends for allauth
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 # Redirect after login/logout

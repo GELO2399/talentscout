@@ -3,15 +3,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from .forms import UserProfileForm, EmployerSignupForm
-from .models import UserProfile
+from .models import UserProfile, Skill 
 from pyresparser import ResumeParser
-from django.contrib.auth import login
 from jobs.models import JobApplication, Job
 from django.core.paginator import Paginator
 from django.db.models import Count
-
+from django.contrib.auth.models import User
 import os
-
 # 🟢 User Profile View
 @login_required
 def profile(request):
@@ -20,12 +18,11 @@ def profile(request):
         form = UserProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             instance = form.save()
-            # Parse resume if uploaded
             if instance.resume:
                 path = instance.resume.path
                 try:
                     data = ResumeParser(path).get_extracted_data()
-                    instance.skills = ', '.join(data.get('skills', []))
+                    instance.skills.set([Skill.objects.get_or_create(name=skill)[0] for skill in data.get('skills', [])])
                     instance.experience = data.get('experience', '')
                     instance.education = ', '.join(data.get('education', []))
                     instance.save()
@@ -41,14 +38,31 @@ def employer_signup(request):
     if request.method == 'POST':
         form = EmployerSignupForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            user.backend = 'django.contrib.auth.backends.ModelBackend'  # Specify backend explicitly
-            login(request, user)
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            email = form.cleaned_data.get('email')
+            company_name = form.cleaned_data.get('company_name')
+
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Username already exists. Please choose a different username.")
+                return render(request, 'users/employer_signup.html', {'form': form})
+
+            # Create user
+            user = User.objects.create_user(username=username, password=password, email=email)
+
+            # ✅ **Just update the existing profile instead of creating a new one:**
+            user.userprofile.is_employer = True
+            user.userprofile.company_name = company_name
+            user.userprofile.save()
+
+            login(request, user, backend='allauth.account.auth_backends.AuthenticationBackend')
+
             messages.success(request, "Employer account created successfully!")
             return redirect('users:employer_dashboard')
     else:
         form = EmployerSignupForm()
     return render(request, 'users/employer_signup.html', {'form': form})
+
 
 # 🟢 Employer Dashboard View
 @login_required
@@ -62,7 +76,8 @@ def employer_dashboard(request):
         messages.error(request, "UserProfile not found.")
         return redirect('users:profile')
 
-    jobs = Job.objects.filter(employer=request.user).annotate(applications_count=Count('jobapplication')).order_by('-posted_at')
+    jobs = Job.objects.filter(employer=request.user).annotate(applications_count=Count('jobapplication')).order_by('-created_at')
+
 
     query = request.GET.get('q')
     location = request.GET.get('location')

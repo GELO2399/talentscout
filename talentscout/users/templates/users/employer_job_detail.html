@@ -19,9 +19,9 @@
           {% if app.status == 'accepted' %}Accepted{% else %}Accept{% endif %}
         </button>
 
-        <button type="submit" name="action" value="message">
+        <a href="{% url 'messaging:start_conversation' application.applicant.id %}" class="btn btn-primary">
           Message
-        </button>
+        </a>
       </form>
     </li>
   {% empty %}

@@ -18,7 +18,7 @@
 <div class="job-cards-container">
   {% for job in jobs %}
     <div class="job-card">
-      <h3><a href="{% url 'jobs:employer_job_detail' job.id %}">{{ job.title }}</a></h3>
+      <h3><a href="{% url 'jobs:job_detail' job.id %}">{{ job.title }}</a></h3>
       <p>{{ job.location }} · {{ job.get_job_type_display }}</p>
     </div>
   {% empty %}

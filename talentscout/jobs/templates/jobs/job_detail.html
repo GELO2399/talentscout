@@ -1,4 +1,7 @@
 {% extends 'base.html' %}
+
+{% block title %}{{ job.title }} - TalentScout{% endblock %}
+
 {% block content %}
   <h2>{{ job.title }}</h2>
   <p><strong>Location:</strong> {{ job.location }}</p>
@@ -7,20 +10,21 @@
   <p><strong>Description:</strong> {{ job.description }}</p>
   <p><strong>Requirements:</strong> {{ job.requirements }}</p>
 
-  {% if messages %}
-    <ul>
-      {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-
-  {% if user.is_authenticated %}
+  {% if profile and profile.is_employer %}
+    <h3>Applicants</h3>
+    {% if applications %}
+      <ul>
+        {% for application in applications %}
+          <li>{{ application.applicant.user.username }} - Status: {{ application.get_status_display }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No applicants yet.</p>
+    {% endif %}
+  {% else %}
     <form action="{% url 'jobs:apply_job' job.id %}" method="post">
       {% csrf_token %}
       <button type="submit">Apply for Job</button>
     </form>
-  {% else %}
-    <p><a href="{% url 'account_login' %}">Login</a> to apply.</p>
   {% endif %}
 {% endblock %}

@@ -1,9 +1,0 @@
-Django>=4.0,<5.0
-django-allauth
-channels
-channels-redis
-pyresparser
-celery
-redis
-scikit-learn
-jwt
