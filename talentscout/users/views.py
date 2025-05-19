@@ -3,14 +3,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from .forms import UserProfileForm, EmployerSignupForm
-from .models import UserProfile, Skill 
+from .models import UserProfile, Skill
 from pyresparser import ResumeParser
 from jobs.models import JobApplication, Job
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.contrib.auth.models import User
 import os
+
+# ------------------------------
 # 🟢 User Profile View
+# ------------------------------
 @login_required
 def profile(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -33,7 +36,9 @@ def profile(request):
         form = UserProfileForm(instance=profile)
     return render(request, 'users/profile.html', {'form': form})
 
+# ------------------------------
 # 🟢 Employer Signup View
+# ------------------------------
 def employer_signup(request):
     if request.method == 'POST':
         form = EmployerSignupForm(request.POST)
@@ -47,38 +52,31 @@ def employer_signup(request):
                 messages.error(request, "Username already exists. Please choose a different username.")
                 return render(request, 'users/employer_signup.html', {'form': form})
 
-            # Create user
             user = User.objects.create_user(username=username, password=password, email=email)
-
-            # ✅ **Just update the existing profile instead of creating a new one:**
             user.userprofile.is_employer = True
             user.userprofile.company_name = company_name
             user.userprofile.save()
 
             login(request, user, backend='allauth.account.auth_backends.AuthenticationBackend')
-
             messages.success(request, "Employer account created successfully!")
             return redirect('users:employer_dashboard')
     else:
         form = EmployerSignupForm()
     return render(request, 'users/employer_signup.html', {'form': form})
 
-
+# ------------------------------
 # 🟢 Employer Dashboard View
+# ------------------------------
 @login_required
 def employer_dashboard(request):
-    try:
-        profile = UserProfile.objects.get(user=request.user)
-        if not profile.is_employer:
-            messages.error(request, "Access denied. Only employers can access this page.")
-            return redirect('users:profile')
-    except UserProfile.DoesNotExist:
-        messages.error(request, "UserProfile not found.")
+    profile = UserProfile.objects.get(user=request.user)
+    if not profile.is_employer:
+        messages.error(request, "Access denied. Only employers can access this page.")
         return redirect('users:profile')
 
     jobs = Job.objects.filter(employer=request.user).annotate(applications_count=Count('jobapplication')).order_by('-created_at')
 
-
+    # Filters (optional)
     query = request.GET.get('q')
     location = request.GET.get('location')
     job_type = request.GET.get('job_type')
@@ -94,35 +92,54 @@ def employer_dashboard(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    context = {
+    return render(request, 'users/employer_dashboard.html', {
         'jobs': page_obj,
         'profile': profile,
-    }
-    return render(request, 'users/employer_dashboard.html', context)
+    })
 
+# ------------------------------
+# 🟢 Employer Login View
+# ------------------------------
 def employer_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
-        if user is not None:
-            # Check if user is an employer
-            if hasattr(user, 'userprofile') and user.userprofile.is_employer:
-                login(request, user)
-                return redirect('users:employer_dashboard')  # Redirect to employer dashboard
-            else:
-                messages.error(request, "This account is not an employer.")
+        if user is not None and hasattr(user, 'userprofile') and user.userprofile.is_employer:
+            login(request, user)
+            return redirect('users:employer_dashboard')
         else:
-            messages.error(request, "Invalid username or password.")
-
+            messages.error(request, "Invalid username/password or not an employer.")
     return render(request, 'users/employer_login.html')
 
+# ------------------------------
+# 🟢 Apply for Job View
+# ------------------------------
+@login_required
+def apply_for_job(request, job_id):
+    job = get_object_or_404(Job, id=job_id)
+    profile = getattr(request.user, 'userprofile', None)
+
+    if not profile or profile.is_employer:
+        messages.error(request, "Only job seekers can apply for jobs.")
+        return redirect('jobs:job_detail', job_id=job_id)
+
+    application, created = JobApplication.objects.get_or_create(job=job, applicant=profile)
+    if created:
+        messages.success(request, "You have successfully applied for the job.")
+    else:
+        messages.info(request, "You have already applied for this job.")
+    return redirect('jobs:job_detail', job_id=job_id)
+
+# ------------------------------
+# 🟢 Employer Job Detail View
+# ------------------------------
 @login_required
 def employer_job_detail(request, job_id):
-    # Fetch the job with the given ID, ensure it belongs to the logged-in employer
+    # Fetch the job ensuring it belongs to logged-in employer
     job = get_object_or_404(Job, id=job_id, employer=request.user)
-    applications = job.jobapplication_set.all()  # Fetch all applications for this job
+    applications = job.jobapplication_set.all()  # all applications for this job
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -132,10 +149,9 @@ def employer_job_detail(request, job_id):
             application = applications.get(applicant__id=applicant_id)
             application.status = 'accepted'
             application.save()
-            messages.success(request, f"{application.applicant.username} has been accepted.")
+            messages.success(request, f"{application.applicant.user.username} has been accepted.")
         
         elif action == 'message' and applicant_id:
-            # Optional: Redirect to a message page or open a chat
             messages.info(request, "Messaging feature is not yet implemented.")
 
         return redirect('jobs:employer_job_detail', job_id=job_id)

@@ -13,15 +13,15 @@
     <ul id="applicant-list">
       {% for application in applicants %}
         <li id="applicant-{{ application.id }}">
-          <strong>{{ application.applicant.username }}</strong> - 
-          {{ application.applicant.email }}
+          <strong>{{ application.applicant.user.username }}</strong> - 
+          {{ application.applicant.user.email }}
 
           <div style="margin-top: 5px;" id="status-{{ application.id }}">
             {% if application.status == 'pending' %}
               <button onclick="acceptApplication({{ application.id }})" class="btn btn-success">
                 Accept
               </button>
-              <a href="{% url 'messaging:start_conversation' application.applicant.id %}" class="btn btn-primary">
+              <a href="{% url 'messaging:start_conversation' application.applicant.user.id %}" class="btn btn-primary">
                 Message
               </a>
             {% elif application.status == 'accepted' %}

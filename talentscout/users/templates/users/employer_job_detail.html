@@ -1,33 +1,52 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
-<h2>{{ job.title }}</h2>
-<p><strong>Location:</strong> {{ job.location }}</p>
-<p><strong>Type:</strong> {{ job.get_job_type_display }}</p>
-<p><strong>Description:</strong></p>
-<p>{{ job.description }}</p>
+  <h1>Manage Applications for Job: {{ job.title }}</h1>
 
-<h3>Applicants ({{ applications.count }})</h3>
-<ul>
-  {% for app in applications %}
-    <li>
-      <strong>{{ app.applicant.username }}</strong> - Applied on {{ app.applied_at|date:"F j, Y" }}
-      <form method="post" style="display:inline;">
-        {% csrf_token %}
-        <input type="hidden" name="applicant_id" value="{{ app.applicant.id }}">
-        
-        <button type="submit" name="action" value="accept" {% if app.status == 'accepted' %}disabled{% endif %}>
-          {% if app.status == 'accepted' %}Accepted{% else %}Accept{% endif %}
-        </button>
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
-        <a href="{% url 'messaging:start_conversation' application.applicant.id %}" class="btn btn-primary">
-          Message
-        </a>
-      </form>
-    </li>
-  {% empty %}
-    <li>No applicants yet.</li>
-  {% endfor %}
-</ul>
+  <div>
+    {% if applications %}
+      <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for application in applications %}
+            <tr>
+              <td>{{ application.applicant.user.username }}</td>
+              <td>{{ application.applicant.user.email }}</td>
+              <td>{{ application.status|capfirst }}</td>
+              <td>
+                {% if application.status == 'pending' %}
+                  <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="applicant_id" value="{{ application.applicant.id }}">
+                    <button type="submit" name="action" value="accept">Accept</button>
+                  </form>
+                {% else %}
+                  <em>No actions available</em>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No applications for this job yet.</p>
+    {% endif %}
+  </div>
 
-<a href="{% url 'users:employer_dashboard' %}">← Back to Dashboard</a>
+  <p><a href="{% url 'users:employer_dashboard' %}">Back to Dashboard</a></p>
 {% endblock %}

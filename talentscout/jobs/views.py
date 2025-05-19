@@ -6,12 +6,14 @@ from users.models import UserProfile
 from django.core.paginator import Paginator
 from django.contrib import messages
 import logging
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 logger = logging.getLogger(__name__)
+
 @login_required
 def job_list(request):
     jobs = Job.objects.all().order_by('-created_at')
-
 
     # Filters
     query = request.GET.get('q')
@@ -49,12 +51,10 @@ def post_job(request):
     return render(request, 'jobs/post_job.html', {'form': form})
 
 
-
-
 @login_required
 def job_detail(request, job_id):
     job = get_object_or_404(Job, id=job_id)
-    profile = getattr(request.user, 'userprofile', None)  # your custom profile model
+    profile = getattr(request.user, 'userprofile', None)
     
     # Fetch job applications if the user is an employer and owns the job
     applications = None
@@ -64,7 +64,7 @@ def job_detail(request, job_id):
     return render(request, 'jobs/job_detail.html', {
         'job': job,
         'profile': profile,
-        'applications': applications,  # will be None for job seekers
+        'applications': applications,
     })
 
 
@@ -77,7 +77,6 @@ def apply_job(request, job_id):
         messages.error(request, "Only job seekers can apply to jobs.")
         return redirect('jobs:job_detail', job_id=job_id)
 
-    # Create job application if not already applied
     existing_application = JobApplication.objects.filter(job=job, applicant=profile).first()
     if existing_application:
         messages.info(request, "You have already applied to this job.")
@@ -87,3 +86,36 @@ def apply_job(request, job_id):
 
     return redirect('jobs:job_detail', job_id=job_id)
 
+
+@login_required
+def employer_job_detail(request, job_id):
+    job = get_object_or_404(Job, id=job_id, employer=request.user)
+    applications = job.jobapplication_set.all()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        applicant_id = request.POST.get('applicant_id')
+
+        if action == 'accept' and applicant_id:
+            application = applications.get(applicant__id=applicant_id)
+            application.status = 'accepted'
+            application.save()
+
+            # Notify WebSocket group
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'job_{job_id}',
+                {
+                    'type': 'status_update',
+                    'id': application.id,
+                    'status': 'accepted',
+                }
+            )
+            messages.success(request, f"{application.applicant.user.username} has been accepted.")
+
+        return redirect('jobs:employer_job_detail', job_id=job_id)
+
+    return render(request, 'jobs/employer_job_detail.html', {
+        'job': job,
+        'applicants': applications,  # renamed from 'applications' to 'applicants'
+    })

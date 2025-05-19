@@ -24,7 +24,7 @@ urlpatterns = [
 
     # OAuth and accounts
     path('accounts/', include('allauth.urls')),
-
+    path('jobs/', include('jobs.urls')),
     # Your apps
     path('', include('jobs.urls')),
     path('users/', include('users.urls')),
