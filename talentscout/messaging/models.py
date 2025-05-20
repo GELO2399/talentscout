@@ -4,7 +4,7 @@ from django.utils import timezone
 
 User = get_user_model()
 class Conversation(models.Model):
-    participants = models.ManyToManyField(User, related_name='conversations')
+    participants = models.ManyToManyField(User)
     started_at = models.DateTimeField(auto_now_add=True)
 
 class Message(models.Model):

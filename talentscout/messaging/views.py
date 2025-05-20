@@ -4,6 +4,7 @@ from django.db.models import Q
 from .models import Message, Conversation
 from .forms import MessageForm
 from django.contrib.auth import get_user_model
+from django.db.models import Count
 
 User = get_user_model()
 
@@ -31,18 +32,22 @@ def message_list(request, receiver_id):
         'receiver': receiver,
         'form': form,
     
-    
-    
-    
-    
     })
-def chat(request):
-    return render(request, 'messaging/chat.html')
+def chat_view(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    return render(request, 'messaging/chat.html', {'conversation': conversation})
 
+@login_required
 def start_conversation(request, user_id):
-    recipient = get_object_or_404(User, id=user_id)
-    # Logic to start a conversation
-    conversation, created = Conversation.objects.get_or_create(
-        user1=request.user, user2=recipient
-    )
-    return redirect('messaging:chat', conversation_id=conversation.id)
+    other_user = get_object_or_404(User, id=user_id)
+
+    # Try to get an existing conversation with both users
+    conversation = Conversation.objects.filter(participants=request.user).filter(participants=other_user).first()
+
+    # If not found, create it
+    if not conversation:
+        conversation = Conversation.objects.create()
+        conversation.participants.set([request.user, other_user])
+        conversation.save()
+
+    return redirect('chat', conversation_id=conversation.id)
