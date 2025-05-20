@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
 
     'channels',
 
@@ -35,8 +36,23 @@ INSTALLED_APPS = [
     'messaging',
     'corsheaders',
 ]
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    },
+    'github': {
+        'SCOPE': ['user', 'repo', 'read:org'],
+    },
+}
 
 SITE_ID = 1
+SOCIALACCOUNT_PROVIDERS['google']['CLIENT_ID'] = '1046805791858-ftfl1do52mque8ptplknfngkqoomj6h4.apps.googleusercontent.com'
+SOCIALACCOUNT_PROVIDERS['google']['SECRET'] = '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'
+# GitHub OAuth
+SOCIALACCOUNT_PROVIDERS['github']['CLIENT_ID'] = 'Ov23liKtpdgufzFRIEJd'
+SOCIALACCOUNT_PROVIDERS['github']['SECRET'] = '38b993d5ebe73c86afb42c4b75171a2b5206ae04'
+ACCOUNT_ADAPTER = 'users.adapter.CustomAccountAdapter'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
