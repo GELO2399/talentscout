@@ -165,10 +165,10 @@ def employer_job_detail(request, job_id):
 @login_required
 def login_redirect(request):
     profile = getattr(request.user, 'userprofile', None)
-    if profile is None:
+    if not profile:
         messages.error(request, "User profile not found.")
-        return redirect('account_logout')  # Or wherever you want to logout/redirect
-
+        return redirect('account_logout')  # or a safe page
+    
     if profile.is_employer:
         return redirect('users:employer_dashboard')
     else:
