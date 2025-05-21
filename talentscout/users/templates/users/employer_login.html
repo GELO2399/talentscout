@@ -19,17 +19,19 @@
 <hr>
 <h3>Or login with:</h3>
 
-<a href="{% provider_login_url 'google' %}?process=login&role=employer">
+<a href="{% provider_login_url 'google' %}?process=login&next=/users/login-redirect/?role=employer">
   <button style="background-color: #4285F4; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
     Sign in with Google
   </button>
 </a>
 
-<a href="{% provider_login_url 'github' %}?process=login&role=employer">
+<a href="{% provider_login_url 'github' %}?process=login&next=/users/login-redirect/?role=employer">
   <button style="background-color: #333; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
     Sign in with GitHub
   </button>
 </a>
+
+
 
 {% if messages %}
   <ul style="color: red;">

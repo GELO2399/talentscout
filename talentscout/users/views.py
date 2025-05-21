@@ -14,6 +14,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 import os
 
+
 def set_login_role(request):
     role = request.GET.get("role")
     if role:
@@ -25,6 +26,24 @@ def set_employer_login(request):
     if provider in ['google', 'github']:
         return redirect(f"/accounts/{provider}/login/?process=login")
     return redirect('users:employer_login')
+@login_required
+def login_redirect(request):
+    role = request.GET.get('role')
+    profile = getattr(request.user, 'userprofile', None)
+
+    if role == 'employer' and profile and not profile.is_employer:
+        profile.is_employer = True
+        profile.save()
+
+    if profile is None:
+        messages.error(request, "User profile not found.")
+        return redirect('account_logout')
+
+    if profile.is_employer:
+        return redirect('users:employer_dashboard')
+    else:
+        return redirect('users:profile')
+
 # ------------------------------
 # 🟢 User Profile View
 # ------------------------------
@@ -175,16 +194,3 @@ def employer_job_detail(request, job_id):
         'job': job,
         'applications': applications,
     })
-@login_required
-def login_redirect(request):
-    profile = getattr(request.user, 'userprofile', None)
-    request.session.pop("login_role", None)  # clean up
-
-    if profile is None:
-        messages.error(request, "User profile not found.")
-        return redirect('account_logout')
-
-    if profile.is_employer:
-        return redirect('users:employer_dashboard')
-    else:
-        return redirect('users:profile')
