@@ -5,19 +5,11 @@ from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from users.models import UserProfile
+from users.decorators import employer_required 
 
 @login_required
+@employer_required
 def dashboard(request):
-    try:
-        profile = UserProfile.objects.get(user=request.user)
-        if not profile.is_employer:
-            messages.error(request, "You do not have access to the Employer Dashboard.")
-            return redirect('users:profile')
-    except UserProfile.DoesNotExist:
-        messages.error(request, "User profile not found.")
-        return redirect('users:profile')
-    
     return render(request, 'employers/dashboard.html')
 
 

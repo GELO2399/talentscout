@@ -3,37 +3,44 @@
 
 {% block content %}
 <h2>Employer Login</h2>
+<!-- Traditional Login Form -->
+<form method="post" action="{% url 'account_login' %}">
+  {% csrf_token %}
+  <label for="id_login">Username or Email:</label><br>
+  <input type="text" name="login" id="id_login" required>
+  <br><br>
+  
+  <label for="id_password">Password:</label><br>
+  <input type="password" name="password" id="id_password" required>
+  <br><br>
+  
+  <button type="submit" style="padding: 8px 16px;">Login</button>
+</form>
 
-<!-- ✅ Social Login Buttons -->
+
+<hr>
 <h3>Or login with:</h3>
+<!-- Social Login Buttons -->
+
 
 <a href="{% provider_login_url 'google' %}?process=login">
-    <button style="background-color: #4285F4; color: white; padding: 8px 16px; margin: 5px;">
+    <button style="background-color: #4285F4; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
         Sign in with Google
     </button>
 </a>
 
 <a href="{% provider_login_url 'github' %}?process=login">
-    <button style="background-color: #333; color: white; padding: 8px 16px; margin: 5px;">
+    <button style="background-color: #333; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
         Sign in with GitHub
     </button>
 </a>
 
-<hr>
 
-<!-- ✅ Traditional Login -->
-<form method="post">
-  {% csrf_token %}
-  <label for="id_username">Username:</label>
-  <input type="text" name="username" id="id_username" required>
-  <br>
-  <label for="id_password">Password:</label>
-  <input type="password" name="password" id="id_password" required>
-  <br>
-  <button type="submit">Login</button>
-</form>
-
-{% for message in messages %}
-  <p style="color: red;">{{ message }}</p>
-{% endfor %}
+{% if messages %}
+  <ul style="color: red;">
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
 {% endblock %}

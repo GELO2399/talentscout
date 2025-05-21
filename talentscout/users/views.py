@@ -9,12 +9,14 @@ from jobs.models import JobApplication, Job
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.contrib.auth.models import User
+from users.decorators import employer_required, jobseeker_required
 import os
 
 # ------------------------------
 # 🟢 User Profile View
 # ------------------------------
 @login_required
+@jobseeker_required
 def profile(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
@@ -68,15 +70,12 @@ def employer_signup(request):
 # 🟢 Employer Dashboard View
 # ------------------------------
 @login_required
+@employer_required
 def employer_dashboard(request):
     profile = UserProfile.objects.get(user=request.user)
-    if not profile.is_employer:
-        messages.error(request, "Access denied. Only employers can access this page.")
-        return redirect('users:profile')
-
     jobs = Job.objects.filter(employer=request.user).annotate(applications_count=Count('jobapplication')).order_by('-created_at')
 
-    # Filters (optional)
+    # Optional filters
     query = request.GET.get('q')
     location = request.GET.get('location')
     job_type = request.GET.get('job_type')
@@ -112,7 +111,6 @@ def employer_login(request):
         else:
             messages.error(request, "Invalid username/password or not an employer.")
     return render(request, 'users/employer_login.html')
-
 # ------------------------------
 # 🟢 Apply for Job View
 # ------------------------------
@@ -160,3 +158,14 @@ def employer_job_detail(request, job_id):
         'job': job,
         'applications': applications,
     })
+@login_required
+def login_redirect(request):
+    profile = getattr(request.user, 'userprofile', None)
+    if profile is None:
+        messages.error(request, "User profile not found.")
+        return redirect('account_logout')
+
+    if profile.is_employer:
+        return redirect('users:employer_dashboard')
+    else:
+        return redirect('users:profile')
