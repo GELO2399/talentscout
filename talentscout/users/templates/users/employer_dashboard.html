@@ -22,6 +22,6 @@
             {% endfor %}
         </ul>
     {% else %}
-        <p>No jobs found. <a href="{% url 'jobs:create_job' %}">Post a new job</a>.</p>
+        <p>No jobs found. <a href="{% url 'jobs:post_job' %}">Post a new job</a>.</p>
     {% endif %}
 {% endblock %}

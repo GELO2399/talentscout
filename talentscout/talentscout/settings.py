@@ -1,14 +1,15 @@
 import os
 from pathlib import Path
-import django_heroku
+from decouple import config
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'your-secret-key-here'
+SECRET_KEY = config('SECRET_KEY')  # Put the actual key in .env
 
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['your-app-name.onrender.com', 'localhost', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -26,7 +27,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
-
+    'corsheaders',
     'channels',
 
     # Your apps
@@ -34,29 +35,12 @@ INSTALLED_APPS = [
     'jobs',
     'employers',
     'messaging',
-    'corsheaders',
 ]
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-    },
-    'github': {
-        'SCOPE': ['user', 'repo', 'read:org'],
-    },
-}
-
-SITE_ID = 1
-SOCIALACCOUNT_PROVIDERS['google']['CLIENT_ID'] = '1046805791858-ftfl1do52mque8ptplknfngkqoomj6h4.apps.googleusercontent.com'
-SOCIALACCOUNT_PROVIDERS['google']['SECRET'] = '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'
-# GitHub OAuth
-SOCIALACCOUNT_PROVIDERS['github']['CLIENT_ID'] = 'Ov23liKtpdgufzFRIEJd'
-SOCIALACCOUNT_PROVIDERS['github']['SECRET'] = '38b993d5ebe73c86afb42c4b75171a2b5206ae04'
-ACCOUNT_ADAPTER = 'users.adapter.CustomAccountAdapter'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -65,25 +49,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'users.middleware.EmployerOnlyMiddleware',
-
-
 ]
-# settings.py
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'jobs.views': {  # Replace with your app's name
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
-    },
-}
 
 ROOT_URLCONF = 'talentscout.urls'
 
@@ -95,7 +61,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request',  # required by allauth
+                'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -103,26 +69,23 @@ TEMPLATES = [
     },
 ]
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-
 WSGI_APPLICATION = 'talentscout.wsgi.application'
 ASGI_APPLICATION = 'talentscout.asgi.application'
 
-# Database (use SQLite for simplicity)
+# ✅ Use PostgreSQL in production; fallback to SQLite locally
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600
+    )
 }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 # Internationalization
@@ -131,64 +94,77 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
-
+# Static and media files
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-CORS_ALLOWED_ORIGINS = [
-    "https://your-app-name.onrender.com",
-]
-CORS_ALLOW_ALL_ORIGINS = True
+MEDIA_ROOT = BASE_DIR / 'media'
 
-# Authentication Backends for allauth
-AUTHENTICATION_BACKENDS = (
+# Authentication
+AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
-)
+]
 
-# Redirect after login/logout
+SITE_ID = 1
+
 LOGIN_URL = '/users/employer-login/'
 LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
-# Email backend (use console for dev, configure SMTP for prod)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# Celery config
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-
-# Channels config (Redis Layer)
-CHANNEL_LAYERS = {
-    
-    'default': {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    },
-}
-
-# Allauth config
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-ACCOUNT_LOGIN_METHODS = {'username', 'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email', 'username', 'password1', 'password2']
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 
-# Default auto field
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': config('GOOGLE_CLIENT_ID'),
+            'secret': config('GOOGLE_CLIENT_SECRET'),
+            'key': ''
+        }
+    },
+    'github': {
+        'APP': {
+            'client_id': config('GITHUB_CLIENT_ID'),
+            'secret': config('GITHUB_CLIENT_SECRET'),
+            'key': ''
+        }
+    }
+}
 
+# CORS
+CORS_ALLOW_ALL_ORIGINS = True
 
+# Email backend
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+# Celery
+CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 
-# Channels and Redis Configuration
+# Channels + Redis
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get("REDIS_URL", "redis://127.0.0.1:6379")],
+            "hosts": [config("REDIS_URL", default="redis://127.0.0.1:6379")],
         },
     },
 }
 
-# Activate Django-Heroku (for better Render compatibility)
-django_heroku.settings(locals())
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'loggers': {
+        'jobs.views': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

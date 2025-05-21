@@ -8,6 +8,7 @@ from django.contrib import messages
 import logging
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -119,3 +120,11 @@ def employer_job_detail(request, job_id):
         'job': job,
         'applicants': applications,  # renamed from 'applications' to 'applicants'
     })
+
+def accept_job_application(request, job_id):
+    if request.method == "POST":
+        application = get_object_or_404(JobApplication, id=job_id)
+        application.status = "accepted"
+        application.save()
+        return redirect('some_view_name')
+    return HttpResponse("Invalid request", status=400)

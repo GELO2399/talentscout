@@ -30,6 +30,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('employers/', include('employers.urls')),
     path('chat/', include('messaging.urls')),
+    path('admin/', admin.site.urls),
 ]
 
 if settings.DEBUG:

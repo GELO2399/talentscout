@@ -6,8 +6,10 @@ pyresparser
 celery
 redis
 scikit-learn
-jwt
+PyJwT
 gunicorn
 daphne
 django-cors-headers
-django-heroku
+python-decouple
+
+
