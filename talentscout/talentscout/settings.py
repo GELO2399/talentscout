@@ -118,6 +118,8 @@ ACCOUNT_SIGNUP_REDIRECT_URL = '/users/login-redirect/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*']
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_ADAPTER = 'users.adapter.CustomAccountAdapter'
+
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {

@@ -1,6 +1,6 @@
 # users/signals.py
 from allauth.socialaccount.signals import pre_social_login
-from allauth.exceptions import ImmediateHttpResponse
+from allauth.core.exceptions import ImmediateHttpResponse
 from django.dispatch import receiver
 from django.shortcuts import redirect
 from django.contrib import messages
@@ -19,5 +19,4 @@ def create_user_profile(sender, request, user, **kwargs):
         profile.is_employer = False
         profile.save()
 
-# Remove or comment out your old restrict_github_login_to_employers signal if you had one.
-# This ensures both employers and job seekers can login via GitHub/social accounts.
+
