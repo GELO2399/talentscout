@@ -6,6 +6,7 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       python manage.py collectstatic --no-input
+      python setup_nltk.py 
       python manage.py migrate
     startCommand: PYTHONPATH=./talentscout gunicorn talentscout.talentscout.wsgi:application
     envVars:
