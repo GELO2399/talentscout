@@ -7,7 +7,7 @@ services:
       pip install -r requirements.txt
       python manage.py collectstatic --no-input
       python manage.py migrate
-    startCommand: daphne -b 0.0.0.0 -p $PORT talentscout.asgi:application
+    startCommand: gunicorn talentscout.wsgi:application
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: talentscout.settings
