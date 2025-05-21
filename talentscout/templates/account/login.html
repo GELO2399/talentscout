@@ -59,11 +59,15 @@
         <h3>Or sign in with:</h3>
 
         <a href="{% provider_login_url 'google' %}?process=login">
-            <button>Sign in with Google</button>
+            <button style="background-color: #4285F4; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
+                Sign in with Google
+            </button>
         </a>
 
         <a href="{% provider_login_url 'github' %}?process=login">
-            <button>Sign in with GitHub</button>
+            <button style="background-color: #333; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
+                Sign in with GitHub
+            </button>
         </a>
     {% endif %}
 {% endblock content %}
