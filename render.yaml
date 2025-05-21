@@ -18,7 +18,7 @@ services:
           name: talentscout-redis
           property: connectionString
     regions: 
-      - oregon  # Choose your nearest region
+      - singapore  # Choose your nearest region
 
   - type: redis
     name: talentscout-redis
