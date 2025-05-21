@@ -6,5 +6,9 @@ from users.models import UserProfile
 def create_user_profile(sender, request, user, **kwargs):
     profile, created = UserProfile.objects.get_or_create(user=user)
     if created:
-        profile.is_employer = False
+        login_role = request.session.get('login_role', '')
+        if login_role == 'employer':
+            profile.is_employer = True
+        else:
+            profile.is_employer = False
         profile.save()

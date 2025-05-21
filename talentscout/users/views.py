@@ -10,8 +10,21 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.contrib.auth.models import User
 from users.decorators import employer_required, jobseeker_required
+from django.http import JsonResponse
+from django.urls import reverse
 import os
 
+def set_login_role(request):
+    role = request.GET.get("role")
+    if role:
+        request.session["login_role"] = role
+    return JsonResponse({"status": "ok"})
+def set_employer_login(request):
+    request.session['login_as_employer'] = True
+    provider = request.GET.get('provider')
+    if provider in ['google', 'github']:
+        return redirect(f"/accounts/{provider}/login/?process=login")
+    return redirect('users:employer_login')
 # ------------------------------
 # 🟢 User Profile View
 # ------------------------------
@@ -165,10 +178,12 @@ def employer_job_detail(request, job_id):
 @login_required
 def login_redirect(request):
     profile = getattr(request.user, 'userprofile', None)
-    if not profile:
+    request.session.pop("login_role", None)  # clean up
+
+    if profile is None:
         messages.error(request, "User profile not found.")
-        return redirect('account_logout')  # or a safe page
-    
+        return redirect('account_logout')
+
     if profile.is_employer:
         return redirect('users:employer_dashboard')
     else:

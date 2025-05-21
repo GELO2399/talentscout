@@ -20,13 +20,13 @@
 <hr>
 <h3>Or login with:</h3>
 
-<a href="{% provider_login_url 'google' %}?process=login">
+<a href="{% url 'users:set_employer_login' %}?provider=google">
   <button style="background-color: #4285F4; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
     Sign in with Google
   </button>
 </a>
 
-<a href="{% provider_login_url 'github' %}?process=login">
+<a href="{% url 'users:set_employer_login' %}?provider=github">
   <button style="background-color: #333; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
     Sign in with GitHub
   </button>
