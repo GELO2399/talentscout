@@ -167,7 +167,7 @@ def login_redirect(request):
     profile = getattr(request.user, 'userprofile', None)
     if profile is None:
         messages.error(request, "User profile not found.")
-        return redirect('account_logout')
+        return redirect('account_logout')  # or 'home' if you prefer
 
     if profile.is_employer:
         return redirect('users:employer_dashboard')

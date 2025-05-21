@@ -112,7 +112,7 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 
 LOGIN_URL = '/users/employer-login/'
-LOGIN_REDIRECT_URL = '/login-redirect/'
+LOGIN_REDIRECT_URL = '/users/login-redirect/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*']
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
