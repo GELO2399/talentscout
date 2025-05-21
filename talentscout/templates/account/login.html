@@ -58,13 +58,13 @@
         <hr>
         <h3>Or sign in with:</h3>
 
-        <a href="{% provider_login_url 'google' %}?process=login">
+        <a href="{% provider_login_url 'google' %}?process=login&next=/users/profile/">
             <button style="background-color: #4285F4; color: white; padding: 10px 20px; margin: 5px; border: none; border-radius: 4px;">
                 Sign in with Google
             </button>
         </a>
 
-        <a href="{% provider_login_url 'github' %}?process=login">
+        <a href="{% provider_login_url 'github' %}?process=login&next=/users/profile/">
             <button style="background-color: #333; color: white; padding: 10px 20px; margin: 5px; border: none; border-radius: 4px;">
                 Sign in with GitHub
             </button>
