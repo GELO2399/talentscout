@@ -52,8 +52,15 @@ def start_conversation(request, user_id):
         conversation.save()
 
     return redirect('chat', conversation_id=conversation.id)
+<<<<<<< HEAD
 
 from django.shortcuts import render
 
 def chat_inbox(request):
     return HttpResponse("Chat inbox coming soon!")
+=======
+@login_required
+def chat_inbox(request):
+    conversations = Conversation.objects.filter(participants=request.user)
+    return render(request, 'messaging/inbox.html', {'conversations': conversations})
+>>>>>>> 829407efee743e7d54be71c930d6b8aeb3e8002b
