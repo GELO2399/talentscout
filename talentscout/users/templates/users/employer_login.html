@@ -4,7 +4,6 @@
 {% block content %}
 <h2>Employer Login</h2>
 
-<!-- Traditional Login Form -->
 <form method="post" action="{% url 'users:employer_login' %}">
   {% csrf_token %}
   
@@ -20,13 +19,13 @@
 <hr>
 <h3>Or login with:</h3>
 
-<a href="{% url 'users:set_employer_login' %}?provider=google">
+<a href="{% provider_login_url 'google' %}?process=login&role=employer">
   <button style="background-color: #4285F4; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
     Sign in with Google
   </button>
 </a>
 
-<a href="{% url 'users:set_employer_login' %}?provider=github">
+<a href="{% provider_login_url 'github' %}?process=login&role=employer">
   <button style="background-color: #333; color: white; padding: 8px 16px; margin: 5px; border: none; cursor: pointer;">
     Sign in with GitHub
   </button>

@@ -7,11 +7,6 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         user = request.user
         profile = getattr(user, 'userprofile', None)
 
-        # Session-based override for employer login
-        if request.session.pop('login_as_employer', False):
-            if profile and profile.is_employer:
-                return reverse('users:employer_dashboard')
-
         if profile and profile.is_employer:
             return reverse('users:employer_dashboard')
         return reverse('users:profile')
