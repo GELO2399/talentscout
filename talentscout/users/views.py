@@ -103,13 +103,17 @@ def employer_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-
         user = authenticate(request, username=username, password=password)
-        if user is not None and hasattr(user, 'userprofile') and user.userprofile.is_employer:
-            login(request, user)
-            return redirect('users:employer_dashboard')
+
+        if user is not None:
+            profile = getattr(user, 'userprofile', None)
+            if profile and profile.is_employer:
+                login(request, user)
+                return redirect('users:employer_dashboard')
+            else:
+                messages.error(request, "This account is not registered as an employer.")
         else:
-            messages.error(request, "Invalid username/password or not an employer.")
+            messages.error(request, "Invalid credentials.")
     return render(request, 'users/employer_login.html')
 # ------------------------------
 # 🟢 Apply for Job View
