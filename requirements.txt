@@ -12,4 +12,4 @@ daphne
 django-cors-headers
 python-decouple
 dj-database-url
-psycop2-binary
+psycopg2-binary
