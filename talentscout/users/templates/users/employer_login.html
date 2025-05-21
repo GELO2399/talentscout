@@ -1,6 +1,27 @@
 {% extends 'base.html' %}
+{% load socialaccount %}
+
 {% block content %}
 <h2>Employer Login</h2>
+
+<!-- ✅ Social Login Buttons -->
+<h3>Or login with:</h3>
+
+<a href="{% provider_login_url 'google' %}?process=login">
+    <button style="background-color: #4285F4; color: white; padding: 8px 16px; margin: 5px;">
+        Sign in with Google
+    </button>
+</a>
+
+<a href="{% provider_login_url 'github' %}?process=login">
+    <button style="background-color: #333; color: white; padding: 8px 16px; margin: 5px;">
+        Sign in with GitHub
+    </button>
+</a>
+
+<hr>
+
+<!-- ✅ Traditional Login -->
 <form method="post">
   {% csrf_token %}
   <label for="id_username">Username:</label>

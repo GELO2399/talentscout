@@ -51,3 +51,7 @@ def start_conversation(request, user_id):
         conversation.save()
 
     return redirect('chat', conversation_id=conversation.id)
+@login_required
+def chat_inbox(request):
+    conversations = Conversation.objects.filter(participants=request.user)
+    return render(request, 'messaging/inbox.html', {'conversations': conversations})

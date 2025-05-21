@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
 
     'channels',
 
@@ -37,6 +38,23 @@ INSTALLED_APPS = [
 ]
 
 SITE_ID = 1
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': '1046805791858-ftfl1do52mque8ptplknfngkqoomj6h4.apps.googleusercontent.com',
+            'secret': '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',
+            'key': ''
+        }
+    },
+    'github': {
+        'APP': {
+            'client_id': '0v23liKtpdgufzFRIEJd',
+            'secret': 'cc2cb3ec17d8e2a4b260178cd1718cc0f382ca90',
+            'key': ''
+        }
+    }
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
