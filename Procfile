@@ -1,1 +1,1 @@
-web: gunicorn talentscout.wsgi
+web: gunicorn talentscout.wsgi:application

@@ -7,7 +7,7 @@ services:
       pip install -r requirements.txt
       python manage.py collectstatic --no-input
       python manage.py migrate
-    startCommand: daphne -b 0.0.0.0 -p $PORT talentscout.asgi:application
+    startCommand: PYTHONPATH=./talentscout gunicorn talentscout.talentscout.wsgi:application
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: talentscout.settings
@@ -18,7 +18,7 @@ services:
           name: talentscout-redis
           property: connectionString
     regions: 
-      - oregon  # Choose your nearest region
+      - singapore  # Choose your nearest region
 
   - type: redis
     name: talentscout-redis
